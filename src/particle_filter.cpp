@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+using std::normal_distribution;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
   /**
@@ -29,8 +30,24 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
    * TODO: Add random Gaussian noise to each particle.
    * NOTE: Consult particle_filter.h for more information about this method 
    *   (and others in this file).
-   */
-  num_particles = 0;  // TODO: Set the number of particles
+   */ 
+  num_particles = 100;  // TODO: Set the number of particles
+  std::default_random_engine gen;
+  // This line creates a normal (Gaussian) distribution for x, y and theta
+  normal_distribution<double> dist_x(x, std[0]);
+  normal_distribution<double> dist_y(y, std[1]);
+  normal_distribution<double> dist_theta(theta, std[2]);
+  for (int i; i < num_particles; i++){
+    Particle p;
+    p.id = i;
+    // Sample from these normal distributions like this: 
+    //   sample_x = dist_x(gen);
+    //   where "gen" is the random engine initialized earlier.
+    p.x = dist_x(gen);
+    p.y = dist_y(gen);
+    p.theta = dist_theta(gen);
+    particles.pushback(p);
+  }
 
 }
 
@@ -43,6 +60,27 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
    *  http://www.cplusplus.com/reference/random/default_random_engine/
    */
+    std::default_random_engine gen;
+  // This line creates a normal (Gaussian) distribution for x, y and theta
+
+  normal_distribution<double> dist_y(y, std_pos[1]);
+  normal_distribution<double> dist_theta(theta, std_pos[2]);
+  for(int i = 0; i < len(particles); i++){
+    //prediction, add gaussian noise for x
+    particles[i].x += velocity/yaw_rate*(sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
+    normal_distribution<double> dist_x(particles[i].x, std_pos[0]);
+    particles[i].x = dist_x(gen);
+    
+    //prediction, add gaussian noise for y
+    particles[i].y += velocity/yaw_rate*(cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t));
+    normal_distribution<double> dist_y(particles[i].y, std_pos[1]);
+    particles[i].y = dist_y(gen);
+    
+    //prediction, add gaussian noise for theta
+    particles[i].theta += yaw_rate*delta_t;
+    normal_distribution<double> dist_theta(particles[i].theta, std_pos[2]);
+    particles[i].theta = dist_theta(gen);
+  }
 
 }
 
