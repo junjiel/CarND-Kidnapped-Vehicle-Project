@@ -15,7 +15,7 @@
 #include <random>
 #include <string>
 #include <vector>
-
+#include <limits>
 #include "helper_functions.h"
 
 using std::string;
@@ -94,6 +94,21 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    *   probably find it useful to implement this method and use it as a helper 
    *   during the updateWeights phase.
    */
+  //predicted is a set of landmarks within sensor range
+  for(int i = 0; i <len(predicted); i++){
+    //initialize the distance with infinity 
+    double dist = std::numeric_limits<double>::infinity();
+    int closest = 0;
+    for(int j = 0; j<len(observations); j++){
+      //loop through to find shortest distance with the helper function dist()
+      double dist_ij = dist(predicted[i].x, predicted[i].y, observations[j].x, observations[j].y)
+      if(dist_ij < dist){
+        dist = dist_ij;
+        closest = j;
+      }
+    }
+    predicted[i].id = observations[closest].id;
+  }
 
 }
 
