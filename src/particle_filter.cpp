@@ -128,6 +128,54 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    *   and the following is a good resource for the actual equation to implement
    *   (look at equation 3.33) http://planning.cs.uiuc.edu/node99.html
    */
+  
+  // Step1. TRANSFORM each observation marker from the vehicle's coordinates to the map's coordinates
+  //for each particle, it should transform the observations to map coordinates, so this transformation should be within for loop of particles
+  //x_map = x_part + (cos(theta) * x_obs) - (sin(theta) * y_obs);
+  //y_map = y_part + (sin(theta) * x_obs) + (cos(theta) * y_obs);
+  for(int i = 0; i < len(particles); i++){
+    vector<LandmarkObs> observations_map;
+    for(int j = 0; j< len(observations); j++){
+      LandmarkObs observation_map;
+      observation_map.x = particles[i].x + cos(particles[i].theta) * observations[j].x - sin(particles[i].theta) * observations[j].y;
+      observation_map.y = particles[i].y + sin(particles[i].theta) * observations[j].x + cos(particles[i].theta) * observations[j].y;
+	  observation_map.id = observations[j].id;
+      observations_map.pushback(observation_map);
+    }
+    // Step2. ENSURE map landmarks are inside sensor range
+    vector<LandmarkObs> predicted;
+    for(int k = 0; k < len(map_landmarks.landmark_list); k++){
+      double particle_landmark_dist = dist(particles[i].x, particles[i].y, map_landmarks.landmark_list[k].x_f, map_landmarks.landmark_list[k].y_f); 
+      LandmarkObs landmark;
+      
+      if(particle_landmark_dist <= sensor_range){
+        landmark.id = map_landmarks.landmark_list[k].id;
+        landmark.x = map_landmarks.landmark_list[k].x_f;
+        landmark.y = map_landmarks.landmark_list[k].y_f;
+        predicted.pushback(landmark);
+     } 
+    }
+      // Step3. Nearest Neighbor Data Association
+      //Here dataAssociation function needs to be called.
+      dataAssociation(predicted, observations_map);
+    
+      // Step4. Compute WEIGHT of particle
+      double weight = 1;
+      for(int q; q <len(predicted); q++){
+        for(int w; w< len(observations_map); w++){
+          if(predicted[q].id = observations_map[w].id){
+            weight *= multiv_prob(std_landmark[0], std_landmark[1], observations_map[w].x, observations_map[w].y, predicted[q].x, predicted[q].y);
+          }
+        }
+      }
+      particles[i].weight = weight;
+      
+  }
+
+  
+
+
+
 
 }
 
@@ -138,6 +186,7 @@ void ParticleFilter::resample() {
    * NOTE: You may find std::discrete_distribution helpful here.
    *   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
    */
+  
 
 }
 

@@ -49,6 +49,34 @@ struct LandmarkObs {
 };
 
 /**
+ * Computes the multivariable probability which is the weight of each particle.
+ * @param sig_x is the sigma of x
+ * @param sig_y is the sigma of y
+ * @param x_obs is x coordinate of observation in map coordinate
+ * @param y_obs is y coordinate of observation in map coordinate
+ * @param mu_x is the x coordinate of the nearest landmarks
+ * @param mu_y is the y coordinate of the nearest landmarks
+ * @output the weight of the particle
+ */
+double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
+                   double mu_x, double mu_y) {
+  // calculate normalization term
+  double gauss_norm;
+  gauss_norm = 1 / (2 * M_PI * sig_x * sig_y);
+
+  // calculate exponent
+  double exponent;
+  exponent = (pow(x_obs - mu_x, 2) / (2 * pow(sig_x, 2)))
+               + (pow(y_obs - mu_y, 2) / (2 * pow(sig_y, 2)));
+    
+  // calculate weight using normalization terms and exponent
+  double weight;
+  weight = gauss_norm * exp(-exponent);
+    
+  return weight;
+}
+
+/**
  * Computes the Euclidean distance between two 2D points.
  * @param (x1,y1) x and y coordinates of first point
  * @param (x2,y2) x and y coordinates of second point
