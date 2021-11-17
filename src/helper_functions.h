@@ -58,7 +58,7 @@ struct LandmarkObs {
  * @param mu_y is the y coordinate of the nearest landmarks
  * @output the weight of the particle
  */
-double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
+inline double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
                    double mu_x, double mu_y) {
   // calculate normalization term
   double gauss_norm;
